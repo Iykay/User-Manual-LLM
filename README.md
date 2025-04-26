@@ -1,5 +1,7 @@
 # User-Manual-LLM
-The developed system is an Information Retrieval QA system that answers based on the document it is fed. It is powered by three main pipelines:
+The developed system is an Information Retrieval QA system that answers based on the document it is fed. It is powered by three main pipelines (Figure 1):
+
+![flowchart](https://github.com/user-attachments/assets/6a1ebbc1-fdf6-4f49-94ed-1c222d821109)
 
 ## The Data Ingestion Pipeline
 
