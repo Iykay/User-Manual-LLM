@@ -1,9 +1,16 @@
 # User-Manual-LLM
+This work aims to explore the use of generative artificial intelligence (AI) to process complex medical manuals and transform them into accessible, localized languages understood by people of underserved populations or marginalised languages. Its goals are to investigate the applicability of open-source large language models (LLMs) to: 
+
+* Develop an adaptable framework capable of understanding, processing, and presenting information from user manuals in clear, localized languages understandable to individuals with varying literacy levels. 
+* Promote inclusivity and accessibility by designing a framework that can be scaled to other languages, particularly focusing on low-resource and marginalized languages. 
+
+## System Architecture
+
 The developed system is an Information Retrieval QA system that answers based on the document it is fed. It is powered by three main pipelines (Figure 1):
 
 ![flowchart](https://github.com/user-attachments/assets/6a1ebbc1-fdf6-4f49-94ed-1c222d821109)
 
-## The Data Ingestion Pipeline
+### The Data Ingestion Pipeline
 
 It is responsible for the consumption and processing of the user manual uploaded by the user. This pipeline is critical to the performance of the whole system based on the fundamental principle of computing, “Garbage-In Garbage-Out”. 
 
@@ -11,14 +18,34 @@ The first step in this pipeline is _**text extraction**_. Once the user manual i
 
 Next, _**we use Python regular expressions to filter out all symbols, characters, and information that would not contribute positively to the system's performance**_. We also filter out texts that are not in English using the googletrans 4.0.0-rc1 library. Knowing that most open-source language models have a context window of ~512 tokens, _**we broke the texts into chunks and organised them using the names of the sections they came from**_. Finally, we use the multi-qa-mpnet-base-dot-v1 sentence transformer (https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-dot-v1) to _**convert all the chunks into their dense vector representations**_ before _**storing the representations in a Facebook AI Similarity Search (FAISS) vector store**_.
 
-## The Context-Retrieval Pipeline
+### The Context-Retrieval Pipeline
 
 This pipeline acts like a sieve. It only gives the QA model chunks related to the query, which we refer to as context from here on. This pipeline starts with the user asking a question in Pidgin. The question is converted to English using the NITHUB-AI/marian-mt-bbc pcm-en translation model (https://huggingface.co/NITHUB-AI/marian-mt-bbc-en-pcm). The dense vector representation of the translated question is generated using the multi-qa-mpnet-base-dot-v1 sentence transformer (https://huggingface.co/sentence-transformers/multi-qa-mpnet-base-dot-v1). To retrieve the context related to the query, a K-nearest neighbour search based on the Euclidean distance is carried out between the embedded query and all the vectors in the FAISS vector DB. To that end, the top 3 chunks with the smallest Euclidean Distances are restructured, placed in a paragraph and sent to the QA model as the context for the question.
 
-## The Multilingual Question Answering Pipeline
+### The Multilingual Question Answering Pipeline
 
-In this pipeline, the question is answered using Google's FLAN-T5-large model, and the answer is translated into Pidgin. The QA model takes two things as input: the translated query from the user and the context from the Context-Retrieval pipeline. The answer from the QA model is fed to the NITHUB-AI/marian mt-bbc-en-pcm translation model (https://huggingface.co/NITHUB-AI/marian-mt-bbc-en-pcm) – it is the same model used to translate the query to English, but it is translating from English to Pidgin in this scenario. The Pidgin answer is then returned to the user. 
+In this pipeline, the question is answered using Google's FLAN-T5-large model (https://huggingface.co/google/flan-t5-large), and the answer is translated into Pidgin. The QA model takes two things as input: the translated query from the user and the context from the Context-Retrieval pipeline. The answer from the QA model is fed to the NITHUB-AI/marian mt-bbc-en-pcm translation model (https://huggingface.co/NITHUB-AI/marian-mt-bbc-en-pcm) – it is the same model used to translate the query to English, but it is translating from English to Pidgin in this scenario. The Pidgin answer is then returned to the user. 
 
 ## Evaluation
 
 The system's overall computation time when responding to a query without a GPU was measured and found to be between 4 and 7 minutes. However, no other outputs were measured as all the models used in the system are already benchmarked and have yet to be fine-tuned.
+
+## Acknowledgement
+
+This work would not have been possible without amazing open-source models and datasets, including (but not limited to):
+
+* Marker-pdf
+* Googletrans 4.0.0-rc1 library
+* multi-qa-mpnet-base-dot-v1 sentence transformer
+* FAISS
+* NITHUB-AI/marian-mt-bbc pcm-en
+* NITHUB-AI/marian-mt-bbc en-pcm
+* Google's FLAN-T5
+
+Thank you to the authors of these models and datasets for making them available to the community!
+
+## Legal
+
+User Manual LLM is licensed under the GNU version 3.0. 
+
+Copyright © Iykay 2025
